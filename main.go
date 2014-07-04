@@ -17,19 +17,13 @@ func print_err(err error) {
 }
 
 func parse_file_arg(file string) string {
-	var err error
-
-	file, err = filepath.Abs(flag.Arg(0))
+	full_file, err := filepath.Abs(file)
 	print_err(err)
-	return file
-
+	return full_file
 }
 
 func init() {
 	flag.Parse()
-	if flag.NArg() > 1 {
-		usage()
-	}
 }
 
 func usage() {
@@ -63,10 +57,11 @@ func main() {
 	if flag.NArg() == 0 {
 		cat_file(os.Stdin)
 	}
+
 	for _, file := range flag.Args() {
-		file = parse_file_arg(file)
 		func() {
-			fi, err := os.Open(file)
+			full_file := parse_file_arg(file)
+			fi, err := os.Open(full_file)
 			print_err(err)
 
 			_ = cat_file(fi)
