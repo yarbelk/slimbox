@@ -9,8 +9,6 @@ import (
 	"path/filepath"
 )
 
-var file string
-
 func print_err(err error) {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%v", err)
@@ -18,7 +16,7 @@ func print_err(err error) {
 	}
 }
 
-func parse_file_arg() string {
+func parse_file_arg(file string) string {
 	var err error
 
 	file, err = filepath.Abs(flag.Arg(0))
@@ -29,7 +27,7 @@ func parse_file_arg() string {
 
 func init() {
 	flag.Parse()
-	if flag.NArg() != 1 {
+	if flag.NArg() > 1 {
 		usage()
 	}
 }
@@ -41,18 +39,7 @@ func usage() {
 	os.Exit(2)
 }
 
-func cat_file(filename string) error {
-	var err error
-
-	fi, err := os.Open(file)
-	print_err(err)
-
-	defer func() {
-		if err := fi.Close(); err != nil {
-			print_err(err)
-		}
-	}()
-
+func cat_file(fi *os.File) error {
 	input_buffer := bufio.NewReader(fi)
 
 	for {
@@ -73,7 +60,23 @@ func cat_file(filename string) error {
 }
 
 func main() {
-	parse_file_arg()
+	if flag.NArg() == 0 {
+		cat_file(os.Stdin)
+	}
+	for _, file := range flag.Args() {
+		file = parse_file_arg(file)
+		func() {
+			fi, err := os.Open(file)
+			print_err(err)
 
-	_ = cat_file(file)
+			_ = cat_file(fi)
+
+			defer func() {
+				if err := fi.Close(); err != nil {
+					print_err(err)
+				}
+			}()
+		}()
+
+	}
 }
