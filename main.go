@@ -27,8 +27,9 @@ func init() {
 }
 
 func usage() {
-	fmt.Fprintf(os.Stderr, "Concatenate files and print them to stdout\n")
+	fmt.Fprintf(os.Stderr, "Concatenate file[s] or standard input to stdout\n")
 	fmt.Fprintf(os.Stderr, "\tUSAGE: %s [FILENAME]\n", os.Args[0])
+	fmt.Fprintf(os.Stderr, "With no file, or when file is `-', read from stdin", os.Args[0])
 	flag.PrintDefaults()
 	os.Exit(2)
 }
@@ -59,19 +60,23 @@ func main() {
 	}
 
 	for _, file := range flag.Args() {
-		func() {
-			full_file := parse_file_arg(file)
-			fi, err := os.Open(full_file)
-			print_err(err)
+		if file == "-" {
+			_ = cat_file(os.Stdin)
+		} else {
+			func() {
+				full_file := parse_file_arg(file)
+				fi, err := os.Open(full_file)
+				print_err(err)
 
-			_ = cat_file(fi)
+				_ = cat_file(fi)
 
-			defer func() {
-				if err := fi.Close(); err != nil {
-					print_err(err)
-				}
+				defer func() {
+					if err := fi.Close(); err != nil {
+						print_err(err)
+					}
+				}()
 			}()
-		}()
+		}
 
 	}
 }
