@@ -1,4 +1,4 @@
 cat
 ===
 
-Cat implemented in golan
+Cat implemented in golang

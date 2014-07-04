@@ -11,8 +11,6 @@ import (
 
 var file string
 
-var output *bufio.Writer
-
 func print_err(err error) {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%v", err)
@@ -51,27 +49,30 @@ func cat_file(filename string) error {
 
 	defer func() {
 		if err := fi.Close(); err != nil {
-			panic(err)
+			print_err(err)
 		}
 	}()
 
 	input_buffer := bufio.NewReader(fi)
 
-	for line, err := input_buffer.ReadBytes(byte('\n')); err != nil; {
-		nn, err := output.Write(line)
+	for {
+		line, err := input_buffer.ReadBytes(byte('\n'))
+		if err != nil {
+			if err != io.EOF {
+				print_err(err)
+			}
+			return nil
+		}
+		nn, err := os.Stdout.Write(line)
 
 		if nn < len(line) {
 			print_err(err)
 		}
 	}
-	if err != io.EOF {
-		print_err(err)
-	}
 	return nil
 }
 
 func main() {
-	output = bufio.NewWriter(os.Stdout)
 	parse_file_arg()
 
 	_ = cat_file(file)
