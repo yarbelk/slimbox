@@ -7,9 +7,10 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
-var numberLines, help *bool
+var numberLines, numberNonBlankLines, help bool
 var lineNumber int = 1
 
 func usage() {
@@ -36,14 +37,20 @@ func parse_file_arg(file string) string {
 }
 
 func init() {
-	numberLines = flag.BoolP("number", "n", false, "number all output lines")
-	help = flag.BoolP("help", "h", false, "print this message")
+	flag.BoolVarP(&numberLines, "number", "n", false, "number all output lines")
+	flag.BoolVarP(&numberNonBlankLines, "number-nonblank", "b", false, "number non-blank output lines, overrides -n")
+	flag.BoolVarP(&help, "help", "h", false, "print this message")
 
 	flag.Parse()
+
+	if numberLines && numberNonBlankLines {
+		numberLines = false
+	}
 }
 
 func cat_file(fi *os.File) error {
 	input_buffer := bufio.NewReader(fi)
+	var number []byte
 
 	for {
 		line, err := input_buffer.ReadBytes(byte('\n'))
@@ -53,21 +60,30 @@ func cat_file(fi *os.File) error {
 			}
 			return nil
 		}
-		if *numberLines {
+		if numberLines {
 			line = append([]byte(fmt.Sprintf("%6d  ", lineNumber)), line...)
+			lineNumber += 1
+		} else if numberNonBlankLines {
+
+			if len(strings.TrimSpace(string(line))) != 0 {
+				number = []byte(fmt.Sprintf("%6d  ", lineNumber))
+				lineNumber += 1
+			} else {
+				number = []byte("      ")
+			}
+			line = append(number, line...)
 		}
 		nn, err := os.Stdout.Write(line)
 
 		if nn < len(line) {
 			print_err(err)
 		}
-		lineNumber += 1
 	}
 	return nil
 }
 
 func main() {
-	if *help {
+	if help {
 		usage()
 	}
 	if flag.NArg() == 0 {
