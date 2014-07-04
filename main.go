@@ -9,10 +9,22 @@ import (
 	"path/filepath"
 )
 
+var numberLines, help *bool
+
+func usage() {
+	fmt.Fprintf(os.Stderr, "Concatenate file[s] or standard input to standard output\n")
+	flag.PrintDefaults()
+	fmt.Fprintf(os.Stderr, "With no FILE, or when FILE is -, read standard input.\n")
+
+	fmt.Fprintf(os.Stderr, "\nExamples:\n\n")
+	fmt.Fprintf(os.Stderr, "    cat f - g  Output f's contents, then standard input, then g's contents.\n")
+	fmt.Fprintf(os.Stderr, "    cat        Copy standard input to standard output.\n")
+	os.Exit(2)
+}
+
 func print_err(err error) {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%v", err)
-		usage()
 	}
 }
 
@@ -23,15 +35,10 @@ func parse_file_arg(file string) string {
 }
 
 func init() {
-	flag.Parse()
-}
+	numberLines = flag.BoolP("number", "n", false, "number all output lines")
+	help = flag.BoolP("help", "h", false, "print this message")
 
-func usage() {
-	fmt.Fprintf(os.Stderr, "Concatenate file[s] or standard input to stdout\n")
-	fmt.Fprintf(os.Stderr, "\tUSAGE: %s [FILENAME]\n", os.Args[0])
-	fmt.Fprintf(os.Stderr, "With no file, or when file is `-', read from stdin", os.Args[0])
-	flag.PrintDefaults()
-	os.Exit(2)
+	flag.Parse()
 }
 
 func cat_file(fi *os.File) error {
@@ -55,6 +62,9 @@ func cat_file(fi *os.File) error {
 }
 
 func main() {
+	if *help {
+		usage()
+	}
 	if flag.NArg() == 0 {
 		cat_file(os.Stdin)
 	}
