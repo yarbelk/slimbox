@@ -10,6 +10,7 @@ import (
 )
 
 var numberLines, help *bool
+var lineNumber int = 1
 
 func usage() {
 	fmt.Fprintf(os.Stderr, "Concatenate file[s] or standard input to standard output\n")
@@ -52,11 +53,15 @@ func cat_file(fi *os.File) error {
 			}
 			return nil
 		}
+		if *numberLines {
+			line = append([]byte(fmt.Sprintf("%6d  ", lineNumber)), line...)
+		}
 		nn, err := os.Stdout.Write(line)
 
 		if nn < len(line) {
 			print_err(err)
 		}
+		lineNumber += 1
 	}
 	return nil
 }
