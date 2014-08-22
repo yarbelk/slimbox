@@ -4,11 +4,11 @@ import (
 	"bufio"
 	"fmt"
 	flag "github.com/ogier/pflag"
-	"io"
+	"github.com/yarbelk/cat/lib"
 	"os"
-	"path/filepath"
-	"strings"
 )
+
+var conf lib.Conf
 
 var numberLines, numberNonBlankLines, help bool
 var lineNumber int = 1
@@ -24,62 +24,17 @@ func usage() {
 	os.Exit(2)
 }
 
-func print_err(err error) {
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "%v", err)
-	}
-}
-
-func parse_file_arg(file string) string {
-	full_file, err := filepath.Abs(file)
-	print_err(err)
-	return full_file
-}
-
 func init() {
-	flag.BoolVarP(&numberLines, "number", "n", false, "number all output lines")
-	flag.BoolVarP(&numberNonBlankLines, "number-nonblank", "b", false, "number non-blank output lines, overrides -n")
-	flag.BoolVarP(&help, "help", "h", false, "print this message")
+	conf = lib.Conf{false, false, false, 1}
+	flag.BoolVarP(&conf.NumberLines, "number", "n", false, "number all output lines")
+	flag.BoolVarP(&conf.NumberNonBlankLines, "number-nonblank", "b", false, "number non-blank output lines, overrides -n")
+	flag.BoolVarP(&conf.Help, "help", "h", false, "print this message")
 
 	flag.Parse()
 
-	if numberLines && numberNonBlankLines {
-		numberLines = false
+	if conf.NumberLines && conf.NumberNonBlankLines {
+		conf.NumberLines = false
 	}
-}
-
-func cat_file(fi *os.File) error {
-	input_buffer := bufio.NewReader(fi)
-	var number []byte
-
-	for {
-		line, err := input_buffer.ReadBytes(byte('\n'))
-		if err != nil {
-			if err != io.EOF {
-				print_err(err)
-			}
-			return nil
-		}
-		if numberLines {
-			line = append([]byte(fmt.Sprintf("%6d  ", lineNumber)), line...)
-			lineNumber += 1
-		} else if numberNonBlankLines {
-
-			if len(strings.TrimSpace(string(line))) != 0 {
-				number = []byte(fmt.Sprintf("%6d  ", lineNumber))
-				lineNumber += 1
-			} else {
-				number = []byte("      ")
-			}
-			line = append(number, line...)
-		}
-		nn, err := os.Stdout.Write(line)
-
-		if nn < len(line) {
-			print_err(err)
-		}
-	}
-	return nil
 }
 
 func main() {
@@ -87,27 +42,20 @@ func main() {
 		usage()
 	}
 	if flag.NArg() == 0 {
-		cat_file(os.Stdin)
+		conf.CatFile(bufio.NewReader(os.Stdin))
 	}
 
 	for _, file := range flag.Args() {
-		if file == "-" {
-			_ = cat_file(os.Stdin)
-		} else {
-			func() {
-				full_file := parse_file_arg(file)
-				fi, err := os.Open(full_file)
-				print_err(err)
+		func() {
+			input_buffer, err := lib.ParseFileArg(file)
+			if err != nil {
+				lib.PrintErr(err)
+				os.Exit(1)
+			}
 
-				_ = cat_file(fi)
+			_ = conf.CatFile(input_buffer)
 
-				defer func() {
-					if err := fi.Close(); err != nil {
-						print_err(err)
-					}
-				}()
-			}()
-		}
+		}()
 
 	}
 }
