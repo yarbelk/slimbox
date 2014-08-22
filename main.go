@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	flag "github.com/ogier/pflag"
 	"github.com/yarbelk/cat/lib"
@@ -42,19 +41,19 @@ func main() {
 		usage()
 	}
 	if flag.NArg() == 0 {
-		conf.CatFile(bufio.NewReader(os.Stdin))
+		conf.CatFile(os.Stdin)
 	}
 
 	for _, file := range flag.Args() {
 		func() {
-			input_buffer, err := lib.ParseFileArg(file)
+			fi, err := lib.ParseFileArg(file)
+			defer fi.Close()
 			if err != nil {
 				lib.PrintErr(err)
 				os.Exit(1)
 			}
-
-			_ = conf.CatFile(input_buffer)
-
+			err = conf.CatFile(fi)
+			lib.PrintErr(err)
 		}()
 
 	}
