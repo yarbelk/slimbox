@@ -4,17 +4,14 @@ import (
 	"bufio"
 	"bytes"
 	"io"
-	"runtime"
 )
-
-func init() {
-	runtime.GOMAXPROCS(4)
-}
 
 type catOptions struct {
 	eol  bool
 	tabs bool
 }
+
+type lineMutator func(io.Reader) ([]byte, error)
 
 func escapeTabs(inputStream io.Reader) ([]byte, error) {
 	bufferedReader := bufio.NewScanner(inputStream)
