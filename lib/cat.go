@@ -2,21 +2,75 @@ package cat
 
 import (
 	"bufio"
+	"bytes"
 	"io"
+	"runtime"
 )
 
-type catOptions struct {
-	eol bool
+func init() {
+	runtime.GOMAXPROCS(4)
 }
 
-func (c *catOptions) Cat(inputStream io.Reader, outputStream io.Writer) error {
-	bufferedReader := bufio.NewScanner(inputStream)
+type catOptions struct {
+	eol  bool
+	tabs bool
+}
 
+func escapeTabs(inputStream io.Reader) ([]byte, error) {
+	bufferedReader := bufio.NewScanner(inputStream)
+	outputStream := new(bytes.Buffer)
+	bufferedReader.Split(bufio.ScanBytes)
+	for bufferedReader.Scan() {
+		aByte := bufferedReader.Bytes()
+		if aByte[0] != byte('\t') {
+			outputStream.Write(aByte)
+		} else {
+			outputStream.Write([]byte{'\\', 't'})
+		}
+	}
+	if err := bufferedReader.Err(); err != nil {
+		return nil, err
+	}
+	return outputStream.Bytes(), nil
+}
+
+func appendEOL(inputStream io.Reader) ([]byte, error) {
+	bufferedReader := bufio.NewScanner(inputStream)
+	outputStream := new(bytes.Buffer)
 	for bufferedReader.Scan() {
 		outputStream.Write(bufferedReader.Bytes())
+		outputStream.Write([]byte{byte('$')})
+	}
+	if err := bufferedReader.Err(); err != nil {
+		return nil, err
+	}
+	return outputStream.Bytes(), nil
+}
+
+func (c *catOptions) Cat(originalInputStream io.Reader, outputStream io.Writer) error {
+	var (
+		line []byte
+		err  error
+	)
+	var inputStream = originalInputStream
+
+	bufferedReader := bufio.NewScanner(inputStream)
+	for bufferedReader.Scan() {
+		line = bufferedReader.Bytes()
 		if c.eol {
-			outputStream.Write([]byte{byte('$')})
+			line, err = appendEOL(bytes.NewBuffer(line))
+			if err != nil {
+				break
+			}
 		}
+		if c.tabs {
+			line, err = escapeTabs(bytes.NewBuffer(line))
+			if err != nil {
+				break
+			}
+		}
+
+		outputStream.Write(line)
 		outputStream.Write([]byte{byte('\n')})
 	}
 	if err := bufferedReader.Err(); err != nil {
