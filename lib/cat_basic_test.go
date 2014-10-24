@@ -6,6 +6,8 @@ import (
 	"testing"
 )
 
+var c *catOptions = &catOptions{}
+
 // Catting an empty file should result in an empty response
 func TestNoLineCat(t *testing.T) {
 	var inputValue string = ""
@@ -13,7 +15,7 @@ func TestNoLineCat(t *testing.T) {
 	var outputStream bytes.Buffer
 	var expectedValue string = ""
 
-	Cat(inputReader, &outputStream)
+	c.Cat(inputReader, &outputStream)
 
 	recievedValue := outputStream.String()
 
@@ -30,7 +32,7 @@ func TestOneLineCat(t *testing.T) {
 	var outputStream bytes.Buffer
 	var expectedValue string = "Hello World!\n"
 
-	Cat(inputReader, &outputStream)
+	c.Cat(inputReader, &outputStream)
 
 	recievedValue := outputStream.String()
 
@@ -46,7 +48,7 @@ func TestOneLineCatNoNewline(t *testing.T) {
 	var outputStream bytes.Buffer
 	var expectedValue string = "Hello World!\n"
 
-	Cat(inputReader, &outputStream)
+	c.Cat(inputReader, &outputStream)
 
 	recievedValue := outputStream.String()
 
@@ -62,7 +64,7 @@ func TestMultiLineCat(t *testing.T) {
 	var outputStream bytes.Buffer
 	var expectedValue string = "Hello World!\n\nHello Gophers!\n"
 
-	Cat(inputReader, &outputStream)
+	c.Cat(inputReader, &outputStream)
 
 	recievedValue := outputStream.String()
 
@@ -80,8 +82,8 @@ func TestMultiInputCat(t *testing.T) {
 	var outputStream bytes.Buffer
 	var expectedValue string = "Hello World!\nHello Gophers!\n"
 
-	Cat(inputReaderOne, &outputStream)
-	Cat(inputReaderTwo, &outputStream)
+	c.Cat(inputReaderOne, &outputStream)
+	c.Cat(inputReaderTwo, &outputStream)
 
 	recievedValue := outputStream.String()
 
@@ -99,8 +101,8 @@ func TestMultiInputCatMissingNewline(t *testing.T) {
 	var outputStream bytes.Buffer
 	var expectedValue string = "Hello World!\nHello Gophers!\n"
 
-	Cat(inputReaderOne, &outputStream)
-	Cat(inputReaderTwo, &outputStream)
+	c.Cat(inputReaderOne, &outputStream)
+	c.Cat(inputReaderTwo, &outputStream)
 
 	recievedValue := outputStream.String()
 
