@@ -4,10 +4,11 @@ import (
 	"fmt"
 	flag "github.com/ogier/pflag"
 	"github.com/yarbelk/cat/lib"
+	"log"
 	"os"
 )
 
-var conf lib.Conf
+var catOptions cat.CatOptions
 
 var numberLines, numberNonBlankLines, help bool
 var lineNumber int = 1
@@ -24,16 +25,19 @@ func usage() {
 }
 
 func init() {
-	conf = lib.Conf{false, false, false, 1}
-	flag.BoolVarP(&conf.NumberLines, "number", "n", false, "number all output lines")
-	flag.BoolVarP(&conf.NumberNonBlankLines, "number-nonblank", "b", false, "number non-blank output lines, overrides -n")
-	flag.BoolVarP(&conf.Help, "help", "h", false, "print this message")
+	catOptions = cat.CatOptions{false, false}
+	flag.BoolVarP(&catOptions.EoL, "show-ends", "E", false, "display $ at end of each line")
+	flag.BoolVarP(&catOptions.Tabs, "show-tabs", "T", false, "display TAB characters as ^I")
+
+	//flag.BoolVarP(&catOptions.NumberLines, "number", "n", false, "number all output lines")
+	//flag.BoolVarP(&conf.NumberNonBlankLines, "number-nonblank", "b", false, "number non-blank output lines, overrides -n")
+	flag.BoolVarP(&help, "help", "h", false, "print this message")
 
 	flag.Parse()
 
-	if conf.NumberLines && conf.NumberNonBlankLines {
-		conf.NumberLines = false
-	}
+	//if conf.NumberLines && conf.NumberNonBlankLines {
+	//	conf.NumberLines = false
+	//}
 }
 
 func main() {
@@ -41,19 +45,20 @@ func main() {
 		usage()
 	}
 	if flag.NArg() == 0 {
-		conf.CatFile(os.Stdin)
+		catOptions.Cat(os.Stdin, os.Stdout)
 	}
 
 	for _, file := range flag.Args() {
 		func() {
-			fi, err := lib.ParseFileArg(file)
+			fi, err := os.Open(file)
 			defer fi.Close()
 			if err != nil {
-				lib.PrintErr(err)
-				os.Exit(1)
+				log.Fatal(err)
 			}
-			err = conf.CatFile(fi)
-			lib.PrintErr(err)
+			err = catOptions.Cat(fi, os.Stdout)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}()
 
 	}

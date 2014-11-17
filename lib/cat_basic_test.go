@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-var c *catOptions = &catOptions{}
+var c *CatOptions = &CatOptions{}
 
 // Catting an empty file should result in an empty response
 func TestNoLineCat(t *testing.T) {

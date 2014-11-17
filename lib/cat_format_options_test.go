@@ -13,9 +13,9 @@ func TestAddEOLChar(t *testing.T) {
 	var outputStream bytes.Buffer
 	var expectedValue string = "Hello$\nWorld!$\n"
 
-	var c *catOptions
+	var c *CatOptions
 
-	c = &catOptions{eol: true}
+	c = &CatOptions{EoL: true}
 
 	c.Cat(inputReader, &outputStream)
 
@@ -31,9 +31,9 @@ func TestAddEscapedTabs(t *testing.T) {
 	var inputValue string = "Hello\tWorld!\n"
 	var inputReader = strings.NewReader(inputValue)
 	var outputStream bytes.Buffer
-	var expectedValue string = "Hello\\tWorld!\n"
+	var expectedValue string = "Hello^IWorld!\n"
 
-	c = &catOptions{tabs: true}
+	c = &CatOptions{Tabs: true}
 	c.Cat(inputReader, &outputStream)
 
 	recievedValue := outputStream.String()

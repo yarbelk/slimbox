@@ -6,9 +6,9 @@ import (
 	"io"
 )
 
-type catOptions struct {
-	eol  bool
-	tabs bool
+type CatOptions struct {
+	EoL  bool
+	Tabs bool
 }
 
 type lineMutator func(io.Reader) ([]byte, error)
@@ -22,7 +22,7 @@ func escapeTabs(inputStream io.Reader) ([]byte, error) {
 		if aByte[0] != byte('\t') {
 			outputStream.Write(aByte)
 		} else {
-			outputStream.Write([]byte{'\\', 't'})
+			outputStream.Write([]byte{'^', 'I'})
 		}
 	}
 	if err := bufferedReader.Err(); err != nil {
@@ -44,7 +44,7 @@ func appendEOL(inputStream io.Reader) ([]byte, error) {
 	return outputStream.Bytes(), nil
 }
 
-func (c *catOptions) Cat(originalInputStream io.Reader, outputStream io.Writer) error {
+func (c *CatOptions) Cat(originalInputStream io.Reader, outputStream io.Writer) error {
 	var (
 		line []byte
 		err  error
@@ -54,13 +54,13 @@ func (c *catOptions) Cat(originalInputStream io.Reader, outputStream io.Writer) 
 	bufferedReader := bufio.NewScanner(inputStream)
 	for bufferedReader.Scan() {
 		line = bufferedReader.Bytes()
-		if c.eol {
+		if c.EoL {
 			line, err = appendEOL(bytes.NewBuffer(line))
 			if err != nil {
 				break
 			}
 		}
-		if c.tabs {
+		if c.Tabs {
 			line, err = escapeTabs(bytes.NewBuffer(line))
 			if err != nil {
 				break
