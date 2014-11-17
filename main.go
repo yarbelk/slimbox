@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"syscall"
 )
 
 var catOptions cat.CatOptions
@@ -13,20 +14,61 @@ var catOptions cat.CatOptions
 var numberLines, numberNonBlankLines, help bool
 var lineNumber int = 1
 
-func main() {
-	catOptions = *cat.NewCatOptions()
+type Options struct {
+	Verb goptions.Verbs
+	Cat  struct {
+		EoL    bool          `goptions:"-E, --show-ends, description='display $ at end of each line'"`
+		Tabs   bool          `goptions:"-T, --show-tabs, description='display TAB characters as ^I'"`
+		Number bool          `goptions:"-n, --number, description='number all output lines'"`
+		Blank  bool          `goptions:"-b, --number-nonblank, description='number non-blank output lines, overrides -n'"`
+		Help   goptions.Help `goptions:"-h, --help, description='print this message'"`
+		Files  goptions.Remainder
+	} `goptions:"cat"`
+}
 
-	options := struct {
-		Verb goptions.Verbs
-		Cat  struct {
-			EoL    bool          `goptions:"-E, --show-ends, description='display $ at end of each line'"`
-			Tabs   bool          `goptions:"-T, --show-tabs, description='display TAB characters as ^I'"`
-			Number bool          `goptions:"-n, --number, description='number all output lines'"`
-			Blank  bool          `goptions:"-b, --number-nonblank, description='number non-blank output lines, overrides -n'"`
-			Help   goptions.Help `goptions:"-h, --help, description='print this message'"`
-			Files  goptions.Remainder
-		} `goptions:"cat"`
-	}{}
+func parseFiles(filename string) (*os.File, error) {
+	if filename == "-" {
+		return os.NewFile(uintptr(syscall.Stdin), "/dev/stdin"), nil
+	}
+	return os.Open(filename)
+
+}
+
+func runCat(options *Options) {
+	catOptions = *cat.NewCatOptions()
+	catOptions.Blank = options.Cat.Blank
+	catOptions.Number = options.Cat.Number
+	catOptions.EoL = options.Cat.EoL
+	catOptions.Tabs = options.Cat.Tabs
+
+	if catOptions.Blank {
+		catOptions.Number = true
+	}
+	if len(options.Cat.Files) == 0 {
+		infile := os.NewFile(uintptr(syscall.Stdin), "/dev/stdin")
+		err := catOptions.Cat(infile, os.Stdout)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+	for _, file := range options.Cat.Files {
+		func() {
+			fi, err := parseFiles(file)
+			if err != nil {
+				log.Fatal(err)
+			}
+			defer fi.Close()
+			err = catOptions.Cat(fi, os.Stdout)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}()
+	}
+
+}
+
+func main() {
+	options := Options{}
 
 	flagset := goptions.NewFlagSet(filepath.Base(os.Args[0]), &options)
 	err := flagset.Parse(os.Args[1:])
@@ -43,33 +85,7 @@ func main() {
 	}
 
 	if options.Verb == "cat" {
-		catOptions.Blank = options.Cat.Blank
-		catOptions.Number = options.Cat.Number
-		catOptions.EoL = options.Cat.EoL
-		catOptions.Tabs = options.Cat.Tabs
-
-		if catOptions.Blank {
-			catOptions.Number = true
-		}
-		if len(options.Cat.Files) == 0 {
-			err := catOptions.Cat(os.Stdin, os.Stdout)
-			if err != nil {
-				log.Fatal(err)
-			}
-		}
-		for _, file := range options.Cat.Files {
-			func() {
-				fi, err := os.Open(file)
-				if err != nil {
-					log.Fatal(err)
-				}
-				defer fi.Close()
-				err = catOptions.Cat(fi, os.Stdout)
-				if err != nil {
-					log.Fatal(err)
-				}
-			}()
-		}
+		runCat(&options)
 	} else {
 		flagset.PrintHelp(os.Stderr)
 	}
