@@ -60,3 +60,22 @@ func TestAddLineNumbers(t *testing.T) {
 		t.Fatalf("Expected %q, was %q", expectedValue, recievedValue)
 	}
 }
+
+// number the non blank lines
+func TestAddLineNumbersToNonBlank(t *testing.T) {
+	var inputValue string = "Hello\n\nWorld!\n"
+	var inputReader = strings.NewReader(inputValue)
+	var outputStream bytes.Buffer
+	var expectedValue string = "     1  Hello\n\n     2  World!\n"
+
+	c = NewCatOptions()
+	c.Blank = true
+	c.Number = true
+	c.Cat(inputReader, &outputStream)
+
+	recievedValue := outputStream.String()
+
+	if expectedValue != recievedValue {
+		t.Fatalf("Expected %q, was %q", expectedValue, recievedValue)
+	}
+}

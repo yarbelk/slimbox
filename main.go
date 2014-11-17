@@ -30,10 +30,13 @@ func init() {
 	flag.BoolVarP(&catOptions.Tabs, "show-tabs", "T", false, "display TAB characters as ^I")
 
 	flag.BoolVarP(&catOptions.Number, "number", "n", false, "number all output lines")
-	//flag.BoolVarP(&conf.NumberNonBlankLines, "number-nonblank", "b", false, "number non-blank output lines, overrides -n")
+	flag.BoolVarP(&catOptions.Blank, "number-nonblank", "b", false, "number non-blank output lines, overrides -n")
 	flag.BoolVarP(&help, "help", "h", false, "print this message")
 
 	flag.Parse()
+	if catOptions.Blank {
+		catOptions.Number = true
+	}
 
 	//if conf.NumberLines && conf.NumberNonBlankLines {
 	//	conf.NumberLines = false

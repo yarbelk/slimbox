@@ -11,6 +11,7 @@ type CatOptions struct {
 	EoL       bool
 	Tabs      bool
 	Number    bool
+	Blank     bool
 	curNumber int
 }
 
@@ -37,10 +38,17 @@ func escapeTabs(inputStream io.Reader) ([]byte, error) {
 func (c *CatOptions) prependLineNumber(inputStream io.Reader) ([]byte, error) {
 	bufferedReader := bufio.NewScanner(inputStream)
 	outputStream := new(bytes.Buffer)
-	numbers := fmt.Sprintf("%6d  ", c.curNumber)
-	c.curNumber++
-	outputStream.Write([]byte(numbers))
+	if !c.Blank {
+		numbers := fmt.Sprintf("%6d  ", c.curNumber)
+		c.curNumber++
+		outputStream.Write([]byte(numbers))
+	}
 	for bufferedReader.Scan() {
+		if c.Blank {
+			numbers := fmt.Sprintf("%6d  ", c.curNumber)
+			c.curNumber++
+			outputStream.Write([]byte(numbers))
+		}
 		outputStream.Write(bufferedReader.Bytes())
 	}
 	if err := bufferedReader.Err(); err != nil {
@@ -64,7 +72,10 @@ func appendEOL(inputStream io.Reader) ([]byte, error) {
 
 // NewCatOptions returns a pointer to a default CatOptions struct, which means curNumber is 1
 func NewCatOptions() *CatOptions {
-	return &CatOptions{false, false, false, 1}
+	c := &CatOptions{}
+	c.curNumber = 1
+	return c
+
 }
 
 func (c *CatOptions) Cat(originalInputStream io.Reader, outputStream io.Writer) error {
