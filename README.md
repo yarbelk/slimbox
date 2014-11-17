@@ -1,10 +1,15 @@
-cat
-===
+slimbox
+=======
 
-Cat implemented in golang
+busybox like project; a paired down version of the gnu tools in on big binary.
 
+since golang is so good at making tiny binaries, I decided to call it slimbox
 
-rewrite branch
---------------
+Really tring to do this TDD - and that has resulted in a couple rewrites as I learn better
+ways of doing the problem and tdd in its domain.
 
-Ok, did a bunch of exploritory coding in the first pass.  now to do it real like.
+implemented
+-----------
+
+right now, "paired down" means "only got cat", working through some low hanging fruit first,
+like 'wc' and some of the other gun-text utils.

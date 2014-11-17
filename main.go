@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	flag "github.com/ogier/pflag"
-	"github.com/yarbelk/cat/lib"
+	"github.com/yarbelk/slimbox/lib"
 	"log"
 	"os"
 )
