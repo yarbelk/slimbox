@@ -7,6 +7,47 @@ import (
 	"io"
 )
 
+const (
+	CAT_HELP = "\xffConcatenate file[s] or standard input to standard output\n" +
+		"Usage: {{.Name}} [global options] {{with .Verbs}}<verb> [verb options]{{end}}\n" +
+		"\n" +
+		"Global options:" +
+		"{{range .Flags}}" +
+		"\n\t" +
+		"\t{{with .Short}}" + "-{{.}}," + "{{end}}" +
+		"\t{{with .Long}}" + "--{{.}}" + "{{end}}" +
+		"\t{{.Description}}" +
+		"{{with .DefaultValue}}" +
+		" (default: {{.}})" +
+		"{{end}}" +
+		"{{if .Obligatory}}" +
+		" (*)" +
+		"{{end}}" +
+		"{{end}}" +
+		"\xff\n\n{{with .Verbs}}Verbs:\xff" +
+		"{{range .}}" +
+		"\xff\n    {{.Name}}:\xff" +
+		"{{range .Flags}}" +
+		"\n\t" +
+		"\t{{with .Short}}" + "-{{.}}," + "{{end}}" +
+		"\t{{with .Long}}" + "--{{.}}" + "{{end}}" +
+		"\t{{.Description}}" +
+		"{{with .DefaultValue}}" +
+		" (default: {{.}})" +
+		"{{end}}" +
+		"{{if .Obligatory}}" +
+		" (*)" +
+		"{{end}}" +
+		"{{end}}" +
+		"{{end}}" +
+		"{{end}}" +
+		"\n" +
+		"With no FILE, or when FILE is -, read standard input.\n\n" +
+		"Examples:\n" +
+		"  cat f - g  Output f's contents, then standard input, then g's contents.\n" +
+		"  cat        Copy standard input to standard output.\n"
+)
+
 type CatOptions struct {
 	EoL       bool
 	Tabs      bool

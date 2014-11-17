@@ -1,11 +1,11 @@
 package main
 
 import (
-	"fmt"
-	flag "github.com/ogier/pflag"
+	"github.com/voxelbrain/goptions"
 	"github.com/yarbelk/slimbox/lib"
 	"log"
 	"os"
+	"path/filepath"
 )
 
 var catOptions cat.CatOptions
@@ -13,56 +13,64 @@ var catOptions cat.CatOptions
 var numberLines, numberNonBlankLines, help bool
 var lineNumber int = 1
 
-func usage() {
-	fmt.Fprintf(os.Stderr, "Concatenate file[s] or standard input to standard output\n")
-	flag.PrintDefaults()
-	fmt.Fprintf(os.Stderr, "With no FILE, or when FILE is -, read standard input.\n")
-
-	fmt.Fprintf(os.Stderr, "\nExamples:\n\n")
-	fmt.Fprintf(os.Stderr, "    cat f - g  Output f's contents, then standard input, then g's contents.\n")
-	fmt.Fprintf(os.Stderr, "    cat        Copy standard input to standard output.\n")
-	os.Exit(2)
-}
-
-func init() {
-	catOptions = *cat.NewCatOptions()
-	flag.BoolVarP(&catOptions.EoL, "show-ends", "E", false, "display $ at end of each line")
-	flag.BoolVarP(&catOptions.Tabs, "show-tabs", "T", false, "display TAB characters as ^I")
-
-	flag.BoolVarP(&catOptions.Number, "number", "n", false, "number all output lines")
-	flag.BoolVarP(&catOptions.Blank, "number-nonblank", "b", false, "number non-blank output lines, overrides -n")
-	flag.BoolVarP(&help, "help", "h", false, "print this message")
-
-	flag.Parse()
-	if catOptions.Blank {
-		catOptions.Number = true
-	}
-
-	//if conf.NumberLines && conf.NumberNonBlankLines {
-	//	conf.NumberLines = false
-	//}
-}
-
 func main() {
-	if help {
-		usage()
-	}
-	if flag.NArg() == 0 {
-		catOptions.Cat(os.Stdin, os.Stdout)
+	catOptions = *cat.NewCatOptions()
+
+	options := struct {
+		Verb goptions.Verbs
+		Cat  struct {
+			EoL    bool          `goptions:"-E, --show-ends, description='display $ at end of each line'"`
+			Tabs   bool          `goptions:"-T, --show-tabs, description='display TAB characters as ^I'"`
+			Number bool          `goptions:"-n, --number, description='number all output lines'"`
+			Blank  bool          `goptions:"-b, --number-nonblank, description='number non-blank output lines, overrides -n'"`
+			Help   goptions.Help `goptions:"-h, --help, description='print this message'"`
+			Files  goptions.Remainder
+		} `goptions:"cat"`
+	}{}
+
+	flagset := goptions.NewFlagSet(filepath.Base(os.Args[0]), &options)
+	err := flagset.Parse(os.Args[1:])
+
+	if err != nil {
+		if options.Verb == "cat" {
+			var catHelp goptions.HelpFunc = goptions.NewTemplatedHelpFunc(cat.CAT_HELP)
+			flagset.Verbs["cat"].HelpFunc = catHelp
+			flagset.Verbs["cat"].PrintHelp(os.Stderr)
+			os.Exit(1)
+		}
+		flagset.PrintHelp(os.Stderr)
+		os.Exit(1)
 	}
 
-	for _, file := range flag.Args() {
-		func() {
-			fi, err := os.Open(file)
-			defer fi.Close()
+	if options.Verb == "cat" {
+		catOptions.Blank = options.Cat.Blank
+		catOptions.Number = options.Cat.Number
+		catOptions.EoL = options.Cat.EoL
+		catOptions.Tabs = options.Cat.Tabs
+
+		if catOptions.Blank {
+			catOptions.Number = true
+		}
+		if len(options.Cat.Files) == 0 {
+			err := catOptions.Cat(os.Stdin, os.Stdout)
 			if err != nil {
 				log.Fatal(err)
 			}
-			err = catOptions.Cat(fi, os.Stdout)
-			if err != nil {
-				log.Fatal(err)
-			}
-		}()
-
+		}
+		for _, file := range options.Cat.Files {
+			func() {
+				fi, err := os.Open(file)
+				if err != nil {
+					log.Fatal(err)
+				}
+				defer fi.Close()
+				err = catOptions.Cat(fi, os.Stdout)
+				if err != nil {
+					log.Fatal(err)
+				}
+			}()
+		}
+	} else {
+		flagset.PrintHelp(os.Stderr)
 	}
 }
