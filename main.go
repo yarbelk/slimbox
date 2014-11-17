@@ -25,11 +25,11 @@ func usage() {
 }
 
 func init() {
-	catOptions = cat.CatOptions{false, false}
+	catOptions = *cat.NewCatOptions()
 	flag.BoolVarP(&catOptions.EoL, "show-ends", "E", false, "display $ at end of each line")
 	flag.BoolVarP(&catOptions.Tabs, "show-tabs", "T", false, "display TAB characters as ^I")
 
-	//flag.BoolVarP(&catOptions.NumberLines, "number", "n", false, "number all output lines")
+	flag.BoolVarP(&catOptions.Number, "number", "n", false, "number all output lines")
 	//flag.BoolVarP(&conf.NumberNonBlankLines, "number-nonblank", "b", false, "number non-blank output lines, overrides -n")
 	flag.BoolVarP(&help, "help", "h", false, "print this message")
 

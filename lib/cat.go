@@ -3,12 +3,15 @@ package cat
 import (
 	"bufio"
 	"bytes"
+	"fmt"
 	"io"
 )
 
 type CatOptions struct {
-	EoL  bool
-	Tabs bool
+	EoL       bool
+	Tabs      bool
+	Number    bool
+	curNumber int
 }
 
 type lineMutator func(io.Reader) ([]byte, error)
@@ -31,6 +34,21 @@ func escapeTabs(inputStream io.Reader) ([]byte, error) {
 	return outputStream.Bytes(), nil
 }
 
+func (c *CatOptions) prependLineNumber(inputStream io.Reader) ([]byte, error) {
+	bufferedReader := bufio.NewScanner(inputStream)
+	outputStream := new(bytes.Buffer)
+	numbers := fmt.Sprintf("%6d  ", c.curNumber)
+	c.curNumber++
+	outputStream.Write([]byte(numbers))
+	for bufferedReader.Scan() {
+		outputStream.Write(bufferedReader.Bytes())
+	}
+	if err := bufferedReader.Err(); err != nil {
+		return nil, err
+	}
+	return outputStream.Bytes(), nil
+}
+
 func appendEOL(inputStream io.Reader) ([]byte, error) {
 	bufferedReader := bufio.NewScanner(inputStream)
 	outputStream := new(bytes.Buffer)
@@ -42,6 +60,11 @@ func appendEOL(inputStream io.Reader) ([]byte, error) {
 		return nil, err
 	}
 	return outputStream.Bytes(), nil
+}
+
+// NewCatOptions returns a pointer to a default CatOptions struct, which means curNumber is 1
+func NewCatOptions() *CatOptions {
+	return &CatOptions{false, false, false, 1}
 }
 
 func (c *CatOptions) Cat(originalInputStream io.Reader, outputStream io.Writer) error {
@@ -66,9 +89,24 @@ func (c *CatOptions) Cat(originalInputStream io.Reader, outputStream io.Writer) 
 				break
 			}
 		}
+		if c.Number {
+			line, err = c.prependLineNumber(bytes.NewBuffer(line))
+			if err != nil {
+				break
+			}
+		}
 
 		outputStream.Write(line)
 		outputStream.Write([]byte{byte('\n')})
+	}
+
+	// Things that act on the final line (even if it is added by cat) as well
+	if c.Number {
+		line, err = c.prependLineNumber(bytes.NewBuffer([]byte("")))
+		outputStream.Write(line)
+		if err != nil {
+			return err
+		}
 	}
 	if err := bufferedReader.Err(); err != nil {
 		return err
