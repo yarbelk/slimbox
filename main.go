@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/voxelbrain/goptions"
 	"github.com/yarbelk/slimbox/lib"
+	"github.com/yarbelk/slimbox/lib/cat"
 	"log"
 	"os"
 	"path/filepath"
@@ -16,22 +17,7 @@ var lineNumber int = 1
 
 type Options struct {
 	Verb goptions.Verbs
-	Cat  struct {
-		EoL    bool          `goptions:"-E, --show-ends, description='display $ at end of each line'"`
-		Tabs   bool          `goptions:"-T, --show-tabs, description='display TAB characters as ^I'"`
-		Number bool          `goptions:"-n, --number, description='number all output lines'"`
-		Blank  bool          `goptions:"-b, --number-nonblank, description='number non-blank output lines, overrides -n'"`
-		Help   goptions.Help `goptions:"-h, --help, description='print this message'"`
-		Files  goptions.Remainder
-	} `goptions:"cat"`
-}
-
-func parseFiles(filename string) (*os.File, error) {
-	if filename == "-" {
-		return os.NewFile(uintptr(syscall.Stdin), "/dev/stdin"), nil
-	}
-	return os.Open(filename)
-
+	Cat  cat.CatOptions `goptions:"cat"`
 }
 
 func runCat(options *Options) {
@@ -53,7 +39,7 @@ func runCat(options *Options) {
 	}
 	for _, file := range options.Cat.Files {
 		func() {
-			fi, err := parseFiles(file)
+			_, fi, err := lib.ParseFiles(file)
 			if err != nil {
 				log.Fatal(err)
 			}
