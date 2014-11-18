@@ -124,9 +124,8 @@ func (c *CatOptions) Cat(originalInputStream io.Reader, outputStream io.Writer) 
 		line []byte
 		err  error
 	)
-	var inputStream = originalInputStream
 
-	bufferedReader := bufio.NewScanner(inputStream)
+	bufferedReader := bufio.NewScanner(originalInputStream)
 	for bufferedReader.Scan() {
 		line = bufferedReader.Bytes()
 		if c.EoL {
