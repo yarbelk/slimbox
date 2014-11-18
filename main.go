@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/voxelbrain/goptions"
-	"github.com/yarbelk/slimbox/lib"
+	"github.com/yarbelk/slimbox/lib/cat"
 	"log"
 	"os"
 	"path/filepath"
