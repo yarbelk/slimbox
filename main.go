@@ -4,7 +4,6 @@ import (
 	"github.com/voxelbrain/goptions"
 	"github.com/yarbelk/slimbox/lib"
 	"github.com/yarbelk/slimbox/lib/cat"
-	"github.com/yarbelk/slimbox/lib/wc"
 	"log"
 	"os"
 	"path/filepath"
@@ -18,15 +17,7 @@ var lineNumber int = 1
 
 type Options struct {
 	Verb goptions.Verbs
-	Cat  struct {
-		EoL    bool          `goptions:"-E, --show-ends, description='display $ at end of each line'"`
-		Tabs   bool          `goptions:"-T, --show-tabs, description='display TAB characters as ^I'"`
-		Number bool          `goptions:"-n, --number, description='number all output lines'"`
-		Blank  bool          `goptions:"-b, --number-nonblank, description='number non-blank output lines, overrides -n'"`
-		Help   goptions.Help `goptions:"-h, --help, description='print this message'"`
-		Files  goptions.Remainder
-	} `goptions:"cat"`
-	WC wc.WCOptions `goptions:"wc"`
+	Cat  cat.CatOptions `goptions:"cat"`
 }
 
 func runCat(options *Options) {

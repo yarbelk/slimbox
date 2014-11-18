@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"github.com/voxelbrain/goptions"
 	"io"
 )
 
@@ -49,10 +50,12 @@ const (
 )
 
 type CatOptions struct {
-	EoL       bool
-	Tabs      bool
-	Number    bool
-	Blank     bool
+	EoL       bool          `goptions:"-E, --show-ends, description='display $ at end of each line'"`
+	Tabs      bool          `goptions:"-T, --show-tabs, description='display TAB characters as ^I'"`
+	Number    bool          `goptions:"-n, --number, description='number all output lines'"`
+	Blank     bool          `goptions:"-b, --number-nonblank, description='number non-blank output lines, overrides -n'"`
+	Help      goptions.Help `goptions:"-h, --help, description='print this message'"`
+	Files     goptions.Remainder
 	curNumber int
 }
 
