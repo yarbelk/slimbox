@@ -1,6 +1,11 @@
 slimbox
 =======
 
+CI
+--
+
+[![Build Status](https://travis-ci.org/yarbelk/slimbox.svg?branch=master)](https://travis-ci.org/yarbelk/slimbox)
+
 busybox like project; a paired down version of the gnu tools in on big binary.
 
 since golang is so good at making tiny binaries, I decided to call it slimbox
