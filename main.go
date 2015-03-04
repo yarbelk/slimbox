@@ -4,6 +4,7 @@ import (
 	"github.com/voxelbrain/goptions"
 	"github.com/yarbelk/slimbox/lib"
 	"github.com/yarbelk/slimbox/lib/cat"
+	"github.com/yarbelk/slimbox/lib/falsy"
 	"log"
 	"os"
 	"path/filepath"
@@ -16,8 +17,13 @@ var numberLines, numberNonBlankLines, help bool
 var lineNumber int = 1
 
 type Options struct {
-	Verb goptions.Verbs
-	Cat  cat.CatOptions `goptions:"cat"`
+	Verb  goptions.Verbs
+	Cat   cat.CatOptions `goptions:"cat"`
+	False falsy.FalseOptions `goptions:"false"`
+}
+
+func runFalse() {
+	falsy.False()
 }
 
 func runCat(options *Options) {
@@ -65,13 +71,20 @@ func main() {
 			flagset.Verbs["cat"].HelpFunc = catHelp
 			flagset.Verbs["cat"].PrintHelp(os.Stderr)
 			os.Exit(1)
+		} else if options.Verb == "false" {
+			var falseHelp goptions.HelpFunc = goptions.NewTemplatedHelpFunc(falsy.FALSE_HELP)
+			flagset.Verbs["false"].HelpFunc = falseHelp
+			flagset.Verbs["false"].PrintHelp(os.Stderr)
 		}
+			
 		flagset.PrintHelp(os.Stderr)
 		os.Exit(1)
 	}
 
 	if options.Verb == "cat" {
 		runCat(&options)
+	} else if options.Verb == "false" {
+		runFalse()
 	} else {
 		flagset.PrintHelp(os.Stderr)
 	}
