@@ -5,6 +5,7 @@ import (
 	"github.com/yarbelk/slimbox/lib"
 	"github.com/yarbelk/slimbox/lib/cat"
 	"github.com/yarbelk/slimbox/lib/falsy"
+	"github.com/yarbelk/slimbox/lib/truthy"
 	"log"
 	"os"
 	"path/filepath"
@@ -20,10 +21,26 @@ type Options struct {
 	Verb  goptions.Verbs
 	Cat   cat.CatOptions `goptions:"cat"`
 	False falsy.FalseOptions `goptions:"false"`
+	True  truthy.TrueOptions `goptions:"true"`
 }
 
-func runFalse() {
+func version() {
+	os.Stderr.WriteString("Nice try - no versions yet\n")
+	os.Exit(0)
+}
+
+func runFalse(options *Options) {
+	if options.False.Version {
+		version()
+	}
 	falsy.False()
+}
+
+func runTrue(options *Options) {
+	if options.True.Version {
+		version()
+	}
+	truthy.True()
 }
 
 func runCat(options *Options) {
@@ -75,6 +92,12 @@ func main() {
 			var falseHelp goptions.HelpFunc = goptions.NewTemplatedHelpFunc(falsy.FALSE_HELP)
 			flagset.Verbs["false"].HelpFunc = falseHelp
 			flagset.Verbs["false"].PrintHelp(os.Stderr)
+			os.Exit(1)
+		} else if options.Verb == "True" {
+			var trueHelp goptions.HelpFunc = goptions.NewTemplatedHelpFunc(truthy.TRUE_HELP)
+			flagset.Verbs["true"].HelpFunc = trueHelp
+			flagset.Verbs["true"].PrintHelp(os.Stderr)
+			os.Exit(1)
 		}
 			
 		flagset.PrintHelp(os.Stderr)
@@ -84,7 +107,9 @@ func main() {
 	if options.Verb == "cat" {
 		runCat(&options)
 	} else if options.Verb == "false" {
-		runFalse()
+		runFalse(&options)
+	} else if options.Verb == "true" {
+		runTrue(&options)
 	} else {
 		flagset.PrintHelp(os.Stderr)
 	}

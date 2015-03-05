@@ -1,4 +1,4 @@
-package falsy
+package truthy
 
 import (
 	"os"
@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	FALSE_HELP = "\xffDo nothing and fail at it." +
+	TRUE_HELP = "\xffDo nothing and succeed at it." +
 		"Usage: {{.Name}} [ignored command line arguments]" +
 		"\n" +
 		"Global options:" +
@@ -24,11 +24,11 @@ const (
 		"{{end}}\n"
 )
 
-type FalseOptions struct {
+type TrueOptions struct {
 	Version   bool          `goptions:"--version, description='output version information and exit'"`
 	Help      goptions.Help `goptions:"-h, --help, description='print this message'"`
 }
 
-func False() {
-	os.Exit(1)
+func True() {
+	os.Exit(0)
 }
