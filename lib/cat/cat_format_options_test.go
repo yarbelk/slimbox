@@ -6,6 +6,8 @@ import (
 	"testing"
 )
 
+var c *CatOptions = &CatOptions{}
+
 // You should be able to add an '$' at the end of the line
 func TestAddEOLChar(t *testing.T) {
 	var inputValue string = "Hello\nWorld!\n"

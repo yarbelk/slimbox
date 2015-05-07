@@ -1,112 +1,118 @@
-package cat
+package cat_test
 
 import (
+	"github.com/yarbelk/slimbox/lib/cat"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+
 	"bytes"
 	"strings"
 	"testing"
 )
 
-var c *CatOptions = &CatOptions{}
+var c *cat.CatOptions = &cat.CatOptions{}
 
-// Catting an empty file should result in an empty response
-func TestNoLineCat(t *testing.T) {
-	var inputValue string = ""
-	var inputReader = strings.NewReader(inputValue)
-	var outputStream bytes.Buffer
-	var expectedValue string = ""
+var _ = Describe("Basic", func() {
+	var (
+		C *cat.CatOptions = &cat.CatOptions{}
+		inputValue string
+		inputReader *strings.Reader
+		outputStream *bytes.Buffer
+	)
 
-	c.Cat(inputReader, &outputStream)
+	BeforeEach(func() {
+		outputStream = new(bytes.Buffer)
+	})
 
-	recievedValue := outputStream.String()
+	Context("Empty File", func() {
+		BeforeEach(func() {
+			inputValue = ""
+			inputReader = strings.NewReader(inputValue)
+		})
 
-	if expectedValue != recievedValue {
-		t.Fatalf("Expected %q, was %q", expectedValue, recievedValue)
-	}
+		It("return an empty response", func() {
+			C.Cat(inputReader, outputStream)
+			Expect(outputStream.String()).To(Equal(""))
+		})
+	})
 
-}
+	Context("One line file", func() {
+		BeforeEach(func() {
+			inputValue = "Hello World!\n"
+			inputReader = strings.NewReader(inputValue)
+		})
 
-// A File with one line and a new line should be the same
-func TestOneLineCat(t *testing.T) {
-	var inputValue string = "Hello World!\n"
-	var inputReader = strings.NewReader(inputValue)
-	var outputStream bytes.Buffer
-	var expectedValue string = "Hello World!\n"
+		It("return the same as the input", func() {
+			C.Cat(inputReader, outputStream)
+			Expect(outputStream.String()).To(Equal(inputValue))
+		})
+	})
 
-	c.Cat(inputReader, &outputStream)
+	Context("One line file without trailing newline", func() {
+		BeforeEach(func() {
+			inputValue = "Hello World!"
+			inputReader = strings.NewReader(inputValue)
+		})
 
-	recievedValue := outputStream.String()
+		It("the input with a trailing newline", func() {
+			C.Cat(inputReader, outputStream)
+			Expect(outputStream.String()).To(Equal("Hello World!\n"))
+		})
+	})
 
-	if expectedValue != recievedValue {
-		t.Fatalf("Expected %q, was %q", expectedValue, recievedValue)
-	}
-}
+	Context("with multiple lines", func() {
+		BeforeEach(func() {
+			inputValue = "Hello World!\n\nHello Gophers!\n"
+			inputReader = strings.NewReader(inputValue)
+		})
 
-// A file without a newline at the end should also have a newline
-func TestOneLineCatNoNewline(t *testing.T) {
-	var inputValue string = "Hello World!"
-	var inputReader = strings.NewReader(inputValue)
-	var outputStream bytes.Buffer
-	var expectedValue string = "Hello World!\n"
+		It("Should be output on multiple lines the same data", func() {
+			C.Cat(inputReader, outputStream)
+			Expect(outputStream.String()).To(Equal(inputValue))
+		})
+	})
 
-	c.Cat(inputReader, &outputStream)
+	Context("when calling cat twice", func() {
+		var (
+			firstInputValue string
+			secondInputValue string
+			inputReaderOne *strings.Reader
+			inputReaderTwo *strings.Reader
+		)
 
-	recievedValue := outputStream.String()
+		Context("with files ending in newlines", func() {
+			BeforeEach(func() {
+				firstInputValue = "Hello World!\n"
+				secondInputValue = "Hello Gophers!\n"
+				inputReaderOne = strings.NewReader(firstInputValue)
+				inputReaderTwo = strings.NewReader(secondInputValue)
+				
+			})
 
-	if expectedValue != recievedValue {
-		t.Fatalf("Expected %q, was %q", expectedValue, recievedValue)
-	}
-}
+			It("Concatinates both inputs", func() {
+				C.Cat(inputReaderOne, outputStream)
+				C.Cat(inputReaderTwo, outputStream)
 
-// A with multiple lines should be output on multiiple lines
-func TestMultiLineCat(t *testing.T) {
-	var inputValue string = "Hello World!\n\nHello Gophers!\n"
-	var inputReader = strings.NewReader(inputValue)
-	var outputStream bytes.Buffer
-	var expectedValue string = "Hello World!\n\nHello Gophers!\n"
+				Expect(outputStream.String()).To(Equal("Hello World!\nHello Gophers!\n"))
+			})
 
-	c.Cat(inputReader, &outputStream)
+		Context("wiht one file without a newline", func() {
+			BeforeEach(func() {
+				firstInputValue = "Hello World!"
+				secondInputValue = "Hello Gophers!\n"
+				inputReaderOne = strings.NewReader(firstInputValue)
+				inputReaderTwo = strings.NewReader(secondInputValue)
+				
+			})
 
-	recievedValue := outputStream.String()
+			It("Concatinates both inputs", func() {
+				C.Cat(inputReaderOne, outputStream)
+				C.Cat(inputReaderTwo, outputStream)
 
-	if expectedValue != recievedValue {
-		t.Fatalf("Expected %q, was %q", expectedValue, recievedValue)
-	}
-}
-
-// Calling cat twice should concatinate the results
-func TestMultiInputCat(t *testing.T) {
-	var inputValueOne string = "Hello World!\n"
-	var inputValueTwo string = "Hello Gophers!\n"
-	var inputReaderOne = strings.NewReader(inputValueOne)
-	var inputReaderTwo = strings.NewReader(inputValueTwo)
-	var outputStream bytes.Buffer
-	var expectedValue string = "Hello World!\nHello Gophers!\n"
-
-	c.Cat(inputReaderOne, &outputStream)
-	c.Cat(inputReaderTwo, &outputStream)
-
-	recievedValue := outputStream.String()
-
-	if expectedValue != recievedValue {
-		t.Fatalf("Expected %q, was %q", expectedValue, recievedValue)
-	}
-}
-
-// Calling cat twice should concatinate the results with a newline if it is missing
-func TestMultiInputCatMissingNewline(t *testing.T) {
-	var inputValueOne string = "Hello World!"
-	var inputValueTwo string = "Hello Gophers!\n"
-	var inputReaderOne = strings.NewReader(inputValueOne)
-	var inputReaderTwo = strings.NewReader(inputValueTwo)
-	var outputStream bytes.Buffer
-	var expectedValue string = "Hello World!\nHello Gophers!\n"
-
-	c.Cat(inputReaderOne, &outputStream)
-	c.Cat(inputReaderTwo, &outputStream)
-
-	recievedValue := outputStream.String()
-
-	if expectedValue != recievedValue {
-		t.Fatalf("Expected %q, was %q", expectedValue, recievedValue)
-	}
-}
+				Expect(outputStream.String()).To(Equal("Hello World!\nHello Gophers!\n"))
+			})
+		})
+		})
+	})
+})
