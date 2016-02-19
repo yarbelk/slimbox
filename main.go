@@ -2,10 +2,10 @@ package main
 
 import (
 	"github.com/voxelbrain/goptions"
-	"github.com/yarbelk/slimbox/lib"
-	"github.com/yarbelk/slimbox/lib/cat"
-	"github.com/yarbelk/slimbox/lib/falsy"
-	"github.com/yarbelk/slimbox/lib/truthy"
+	"gitlab.com/yarbelk/slimbox/lib"
+	"gitlab.com/yarbelk/slimbox/lib/cat"
+	"gitlab.com/yarbelk/slimbox/lib/falsy"
+	"gitlab.com/yarbelk/slimbox/lib/truthy"
 	"log"
 	"os"
 	"path/filepath"

@@ -1,0 +1,3 @@
+package: gitlab.com/yarbelk/slimbox
+import:
+- package: github.com/voxelbrain/goptions
