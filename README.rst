@@ -1,6 +1,12 @@
 slimbox
 =======
 
+Abandoned
+---------
+I've stopped work on this but don't want to delete it mostly because of the issues; which capture a snapshot of busybox
+functionality.  I may come back to this project, but will start the code from scratch as I'm significantlly better
+at Golang now; if not better at spelling.
+
 CI
 --
 
