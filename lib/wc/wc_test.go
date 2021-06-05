@@ -7,6 +7,11 @@ import (
 	"gitlab.com/yarbelk/slimbox/lib/wc"
 )
 
+const (
+	arabic  = "\u0645\u0631\u062d\u0628\u0627\u0020\u0628\u0627\u0644\u0639\u0627\u0644\u0645\u0021"
+	chinese = "\u4f60\u597d\uff0c\u4e16\u754c\uff01"
+)
+
 type TestOptions struct {
 	flags map[string]bool
 	args  []string
@@ -59,20 +64,22 @@ func TestUnicodeStuff(t *testing.T) {
 		given    *strings.Reader
 		args     []string
 	}{
-		{"right to left", wc.Results{}, strings.NewReader("مرحبا بالعالم!"), []string{}},
-		{"Chinese", wc.Results{Bytes: 18, Characters: 6, Words: 1, Newlines: 0, Longest: 18}, strings.NewReader("你好，世界！"), []string{}},
+		{"arabic (note: no idea the right way, just duplicate gnu wc", wc.Results{Bytes: 26, Characters: 14, Words: 2, Newlines: 0, Longest: 14}, strings.NewReader(arabic), []string{}},
+		{"Chinese", wc.Results{Bytes: 18, Characters: 6, Words: 1, Newlines: 0, Longest: 12}, strings.NewReader(chinese), []string{}},
 		{"zero width space", wc.Results{Bytes: 5, Characters: 3, Words: 1, Newlines: 0, Longest: 2}, strings.NewReader("a\u200Bb"), []string{}},
 	}
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Log(arabic)
+			t.Log(chinese)
 			options := TestOptions{make(map[string]bool), tt.args}
 			actual, err := wc.WordCount(options, tt.given)
 			if err != nil {
 				t.Errorf("expected no error, actual %s", err)
 			}
 			if actual != tt.expected {
-				t.Errorf("expected %+v, actual %+v", tt.expected, actual)
+				t.Errorf("\n\t\texpected %+v\n\t\tactual   %+v", tt.expected, actual)
 			}
 		})
 	}

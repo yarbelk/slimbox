@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"io"
 	"unicode"
+
+	"golang.org/x/text/width"
 )
 
 type Options interface {
@@ -14,6 +16,17 @@ type Options interface {
 // Results are the totals for output
 type Results struct {
 	Bytes, Characters, Newlines, Words, Longest uint
+}
+
+func runeSize(r rune) uint {
+	switch width.LookupRune(r).Kind() {
+	case width.EastAsianNarrow:
+		return 1
+	case width.EastAsianFullwidth, width.EastAsianWide:
+		return 2
+	default:
+		return 1
+	}
 }
 
 func WordCount(opts Options, in io.Reader) (Results, error) {
@@ -39,7 +52,7 @@ func WordCount(opts Options, in io.Reader) (Results, error) {
 		}
 		if unicode.IsPrint(r) && !unicode.IsSpace(r) {
 			inWord = 1
-			position++
+			position += runeSize(r)
 			continue
 		}
 		if unicode.IsSpace(r) {
@@ -52,7 +65,7 @@ func WordCount(opts Options, in io.Reader) (Results, error) {
 			case '\v':
 				results.Newlines++
 			case '\u00A0', ' ':
-				position++
+				position += runeSize(r)
 				continue
 			case '\n':
 				results.Newlines++

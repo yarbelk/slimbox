@@ -4,3 +4,6 @@ github.com/voxelbrain/goptions v0.0.0-20180630082107-58cddc247ea2 h1:txplJASvd6b
 github.com/voxelbrain/goptions v0.0.0-20180630082107-58cddc247ea2/go.mod h1:DGCIhurYgnLz8J9ga1fMV/fbLDyUvTyrWXVWUIyJon4=
 github.com/yarbelk/slimbox v0.0.0-20160219062232-acbcf00017d9 h1:JsingUWGwDl1/dftmojtJ3I3r2V+SBYa5TybgOfgO7A=
 github.com/yarbelk/slimbox v0.0.0-20160219062232-acbcf00017d9/go.mod h1:q0jw/31wjGt9ezCFxJzlhRqFotAdBoeFJ4iKvNRKPe4=
+golang.org/x/text v0.3.6 h1:aRYxNxv6iGQlyVaZmk6ZgYEDa+Jg18DxebPSrd6bg1M=
+golang.org/x/text v0.3.6/go.mod h1:5Zoc/QRtKVWzQhOtBMvqHzDpF6irO9z98xDceosuGiQ=
+golang.org/x/tools v0.0.0-20180917221912-90fa682c2a6e/go.mod h1:n7NCudcB/nEzxVGmLbDWY5pfWTLqBcC2KZ6jyYvM4mQ=
