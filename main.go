@@ -1,15 +1,16 @@
 package main
 
 import (
+	"log"
+	"os"
+	"path/filepath"
+	"syscall"
+
 	"github.com/voxelbrain/goptions"
 	"github.com/yarbelk/slimbox/lib"
 	"github.com/yarbelk/slimbox/lib/cat"
 	"github.com/yarbelk/slimbox/lib/falsy"
 	"github.com/yarbelk/slimbox/lib/truthy"
-	"log"
-	"os"
-	"path/filepath"
-	"syscall"
 )
 
 var catOptions cat.CatOptions
@@ -19,7 +20,7 @@ var lineNumber int = 1
 
 type Options struct {
 	Verb  goptions.Verbs
-	Cat   cat.CatOptions `goptions:"cat"`
+	Cat   cat.CatOptions     `goptions:"cat"`
 	False falsy.FalseOptions `goptions:"false"`
 	True  truthy.TrueOptions `goptions:"true"`
 }
@@ -99,7 +100,7 @@ func main() {
 			flagset.Verbs["true"].PrintHelp(os.Stderr)
 			os.Exit(1)
 		}
-			
+
 		flagset.PrintHelp(os.Stderr)
 		os.Exit(1)
 	}

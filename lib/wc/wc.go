@@ -7,7 +7,6 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/spf13/pflag"
 	"golang.org/x/text/width"
 )
 
@@ -38,16 +37,6 @@ func (d defaultOptions) Args() []string {
 	return []string{}
 }
 
-// figuring out where these should live
-var (
-	options      *pflag.FlagSet = pflag.NewFlagSet("wc", pflag.ContinueOnError)
-	lines        *bool          = options.Bool("l", false, "Count newlines")
-	bytes        *bool          = options.Bool("c", false, "Count bytes")
-	words        *bool          = options.Bool("w", false, "Count words")
-	characters   *bool          = options.Bool("m", false, "Count characters")
-	printLongist *bool          = options.Bool("L", false, "Print longest line length")
-)
-
 // Results are the totals for output
 type Results struct {
 	Bytes, Characters, Newlines, Words, Longest uint
@@ -72,6 +61,46 @@ func approxLog10(u uint) uint {
 	return 1
 }
 
+func (r Results) GetMax(options Options) (max uint) {
+	formatOpts := options
+	if options.NFlag() == 0 {
+		formatOpts = defaultOptions{}
+	}
+	for _, c := range order[:4] {
+		switch c {
+		case 'l':
+			if ok, err := formatOpts.GetBool("l"); !ok || err != nil {
+				break
+			}
+			if max < r.Newlines {
+				max = r.Newlines
+			}
+		case 'w':
+			if ok, err := formatOpts.GetBool("w"); !ok || err != nil {
+				break
+			}
+			if max < r.Words {
+				max = r.Words
+			}
+		case 'm':
+			if ok, err := formatOpts.GetBool("m"); !ok || err != nil {
+				break
+			}
+			if max < r.Characters {
+				max = r.Characters
+			}
+		case 'c':
+			if ok, err := formatOpts.GetBool("c"); !ok || err != nil {
+				break
+			}
+			if max < r.Bytes {
+				max = r.Bytes
+			}
+		}
+	}
+	return
+}
+
 // Printf prints all results based on format options
 func (rs ResultsSet) Printf(options Options) string {
 	builder := strings.Builder{}
@@ -84,7 +113,6 @@ func (rs ResultsSet) Printf(options Options) string {
 	for _, results := range rs.Results {
 	loop:
 		for _, c := range order {
-			fmt.Println(results, string(c))
 			switch c {
 			case 'l':
 				if ok, err := formatOpts.GetBool("l"); !ok || err != nil {
