@@ -12,19 +12,6 @@ const (
 	chinese = "\u4f60\u597d\uff0c\u4e16\u754c\uff01"
 )
 
-type TestOptions struct {
-	flags map[string]bool
-	args  []string
-}
-
-func (to TestOptions) GetBool(name string) (bool, error) {
-	return to.flags[name], nil
-}
-
-func (to TestOptions) Args() []string {
-	return to.args
-}
-
 func TestBasicTypesStdinStyle(t *testing.T) {
 	var tests = []struct {
 		name     string
@@ -45,13 +32,13 @@ func TestBasicTypesStdinStyle(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			options := TestOptions{make(map[string]bool), tt.args}
+			options := &testOptions{Opts: make(map[string]bool), filenames: tt.args}
 			actual, err := wc.WordCount(options, tt.given)
 			if err != nil {
 				t.Errorf("expected no error, actual %s", err)
 			}
 			if actual != tt.expected {
-				t.Errorf("expected %+v, actual %+v", tt.expected, actual)
+				t.Errorf("\n\t\texpected %+v\n\t\tactual   %+v", tt.expected, actual)
 			}
 		})
 	}
@@ -73,7 +60,7 @@ func TestUnicodeStuff(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Log(arabic)
 			t.Log(chinese)
-			options := TestOptions{make(map[string]bool), tt.args}
+			options := &testOptions{Opts: make(map[string]bool), filenames: tt.args}
 			actual, err := wc.WordCount(options, tt.given)
 			if err != nil {
 				t.Errorf("expected no error, actual %s", err)

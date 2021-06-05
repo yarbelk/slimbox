@@ -2,20 +2,137 @@ package wc
 
 import (
 	"bufio"
+	"fmt"
 	"io"
+	"strings"
 	"unicode"
 
+	"github.com/spf13/pflag"
 	"golang.org/x/text/width"
 )
 
+const order = "lwmcL"
+
 type Options interface {
 	Args() []string
-	GetBool(name string) (bool, error)
+	GetBool(string) (bool, error)
+	NFlag() int
 }
+
+type defaultOptions struct{}
+
+func (d defaultOptions) NFlag() int {
+	return 0
+}
+
+func (d defaultOptions) GetBool(n string) (bool, error) {
+	switch n {
+	case "l", "c", "w":
+		return true, nil
+	default:
+		return false, nil
+	}
+}
+
+func (d defaultOptions) Args() []string {
+	return []string{}
+}
+
+// figuring out where these should live
+var (
+	options      *pflag.FlagSet = pflag.NewFlagSet("wc", pflag.ContinueOnError)
+	lines        *bool          = options.Bool("l", false, "Count newlines")
+	bytes        *bool          = options.Bool("c", false, "Count bytes")
+	words        *bool          = options.Bool("w", false, "Count words")
+	characters   *bool          = options.Bool("m", false, "Count characters")
+	printLongist *bool          = options.Bool("L", false, "Print longest line length")
+)
 
 // Results are the totals for output
 type Results struct {
 	Bytes, Characters, Newlines, Words, Longest uint
+
+	Filename string
+}
+
+type ResultsSet struct {
+	MaxNumber uint
+
+	Results []Results
+}
+
+func approxLog10(u uint) uint {
+	var i uint = 1
+	for ; true; i++ {
+		u /= 10
+		if u == 0 {
+			return i
+		}
+	}
+	return 1
+}
+
+// Printf prints all results based on format options
+func (rs ResultsSet) Printf(options Options) string {
+	builder := strings.Builder{}
+	width := approxLog10(rs.MaxNumber) + 2
+	fmtstring := fmt.Sprintf("%%%dd", width)
+	formatOpts := options
+	if options.NFlag() == 0 {
+		formatOpts = defaultOptions{}
+	}
+	for _, results := range rs.Results {
+	loop:
+		for _, c := range order {
+			fmt.Println(results, string(c))
+			switch c {
+			case 'l':
+				if ok, err := formatOpts.GetBool("l"); !ok || err != nil {
+					continue loop
+				}
+				builder.WriteString(fmt.Sprintf(fmtstring, results.Newlines))
+			case 'w':
+				if ok, err := formatOpts.GetBool("w"); !ok || err != nil {
+					continue loop
+				}
+				builder.WriteString(fmt.Sprintf(fmtstring, results.Words))
+			case 'm':
+				if ok, err := formatOpts.GetBool("m"); !ok || err != nil {
+					continue loop
+				}
+				builder.WriteString(fmt.Sprintf(fmtstring, results.Characters))
+			case 'c':
+				if ok, err := formatOpts.GetBool("c"); !ok || err != nil {
+					continue loop
+				}
+				builder.WriteString(fmt.Sprintf(fmtstring, results.Bytes))
+			case 'L':
+				if ok, err := formatOpts.GetBool("L"); !ok || err != nil {
+					continue loop
+				}
+				builder.WriteString(fmt.Sprintf(fmtstring, results.Longest))
+			}
+
+		}
+		if results.Filename != "" {
+			builder.WriteString("  ")
+			builder.WriteString(results.Filename)
+		}
+		builder.WriteRune('\n')
+	}
+	return builder.String()
+}
+
+// Default layout
+func (rs ResultsSet) String() string {
+	builder := strings.Builder{}
+	width := approxLog10(rs.MaxNumber) + 2
+	fmtstring := fmt.Sprintf("%%%dd%%%dd%%%dd  %%s", width, width, width)
+	for _, result := range rs.Results {
+		builder.WriteString(fmt.Sprintf(fmtstring, result.Newlines, result.Words, result.Bytes, result.Filename))
+		builder.WriteRune('\n')
+	}
+	return builder.String()
 }
 
 func runeSize(r rune) uint {
