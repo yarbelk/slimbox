@@ -56,7 +56,6 @@ func WcMain() error {
 		wg.Add(1)
 		go func() {
 			for filename := range fnChan {
-				fmt.Println(filename)
 				var in *os.File
 				var err error
 				if filename == "-" {
