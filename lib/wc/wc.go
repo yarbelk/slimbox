@@ -12,29 +12,40 @@ import (
 
 const order = "lwmcL"
 
+const (
+	LineFlag = "lines"
+	ByteFlag = "bytes"
+	WordFlag = "words"
+	CharFlag = "chars"
+	LongFlag = "max-line-length"
+)
+
 type Options interface {
 	Args() []string
 	GetBool(string) (bool, error)
 	NFlag() int
 }
 
-type defaultOptions struct{}
+type DefaultOptions struct{ Filenames []string }
 
-func (d defaultOptions) NFlag() int {
+func (d DefaultOptions) NFlag() int {
 	return 0
 }
 
-func (d defaultOptions) GetBool(n string) (bool, error) {
+func (d DefaultOptions) GetBool(n string) (bool, error) {
 	switch n {
-	case "l", "c", "w":
+	case LineFlag, ByteFlag, WordFlag:
 		return true, nil
 	default:
 		return false, nil
 	}
 }
 
-func (d defaultOptions) Args() []string {
-	return []string{}
+func (d DefaultOptions) Args() []string {
+	if d.Filenames == nil {
+		return []string{}
+	}
+	return d.Filenames
 }
 
 // Results are the totals for output
@@ -64,33 +75,33 @@ func approxLog10(u uint) uint {
 func (r Results) GetMax(options Options) (max uint) {
 	formatOpts := options
 	if options.NFlag() == 0 {
-		formatOpts = defaultOptions{}
+		formatOpts = DefaultOptions{}
 	}
 	for _, c := range order[:4] {
 		switch c {
 		case 'l':
-			if ok, err := formatOpts.GetBool("l"); !ok || err != nil {
+			if ok, err := formatOpts.GetBool(LineFlag); !ok || err != nil {
 				break
 			}
 			if max < r.Newlines {
 				max = r.Newlines
 			}
 		case 'w':
-			if ok, err := formatOpts.GetBool("w"); !ok || err != nil {
+			if ok, err := formatOpts.GetBool(WordFlag); !ok || err != nil {
 				break
 			}
 			if max < r.Words {
 				max = r.Words
 			}
 		case 'm':
-			if ok, err := formatOpts.GetBool("m"); !ok || err != nil {
+			if ok, err := formatOpts.GetBool(CharFlag); !ok || err != nil {
 				break
 			}
 			if max < r.Characters {
 				max = r.Characters
 			}
 		case 'c':
-			if ok, err := formatOpts.GetBool("c"); !ok || err != nil {
+			if ok, err := formatOpts.GetBool(ByteFlag); !ok || err != nil {
 				break
 			}
 			if max < r.Bytes {
@@ -108,34 +119,34 @@ func (rs ResultsSet) Printf(options Options) string {
 	fmtstring := fmt.Sprintf("%%%dd", width)
 	formatOpts := options
 	if options.NFlag() == 0 {
-		formatOpts = defaultOptions{}
+		formatOpts = DefaultOptions{}
 	}
 	for _, results := range rs.Results {
 	loop:
 		for _, c := range order {
 			switch c {
 			case 'l':
-				if ok, err := formatOpts.GetBool("l"); !ok || err != nil {
+				if ok, err := formatOpts.GetBool(LineFlag); !ok || err != nil {
 					continue loop
 				}
 				builder.WriteString(fmt.Sprintf(fmtstring, results.Newlines))
 			case 'w':
-				if ok, err := formatOpts.GetBool("w"); !ok || err != nil {
+				if ok, err := formatOpts.GetBool(WordFlag); !ok || err != nil {
 					continue loop
 				}
 				builder.WriteString(fmt.Sprintf(fmtstring, results.Words))
 			case 'm':
-				if ok, err := formatOpts.GetBool("m"); !ok || err != nil {
+				if ok, err := formatOpts.GetBool(CharFlag); !ok || err != nil {
 					continue loop
 				}
 				builder.WriteString(fmt.Sprintf(fmtstring, results.Characters))
 			case 'c':
-				if ok, err := formatOpts.GetBool("c"); !ok || err != nil {
+				if ok, err := formatOpts.GetBool(ByteFlag); !ok || err != nil {
 					continue loop
 				}
 				builder.WriteString(fmt.Sprintf(fmtstring, results.Bytes))
 			case 'L':
-				if ok, err := formatOpts.GetBool("L"); !ok || err != nil {
+				if ok, err := formatOpts.GetBool(LongFlag); !ok || err != nil {
 					continue loop
 				}
 				builder.WriteString(fmt.Sprintf(fmtstring, results.Longest))

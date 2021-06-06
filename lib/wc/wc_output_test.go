@@ -53,12 +53,12 @@ func TestFormating(t *testing.T) {
 		}, {
 			name:       "line and words",
 			expected:   "   2   2  testfile\n",
-			Options:    &testOptions{Opts: map[string]bool{"l": true, "w": true}, nset: 2},
+			Options:    &testOptions{Opts: map[string]bool{wc.LineFlag: true, wc.WordFlag: true}, nset: 2},
 			ResultsSet: resultset,
 		}, {
 			name:       "two lines, scaled correctly",
 			expected:   "    2    2    5   10    3  testfile\n   22   18   50  900    8  testfile2\n",
-			Options:    &testOptions{Opts: map[string]bool{"l": true, "w": true, "c": true, "m": true, "L": true}, nset: 2},
+			Options:    &testOptions{Opts: map[string]bool{wc.LineFlag: true, wc.WordFlag: true, wc.ByteFlag: true, wc.CharFlag: true, wc.LongFlag: true}, nset: 2},
 			ResultsSet: resultset2,
 		},
 	}
