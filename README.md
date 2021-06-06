@@ -73,3 +73,8 @@ then i want some more interesting ones like:
 - [ ] uniq
 - [ ] test
 
+Then the fun ones:
+
+- [ ] exec
+- [ ] init
+- [ ] runlevel (no idea if i will do this because: its a deap rabit hole)
