@@ -242,5 +242,4 @@ func WordCount(opts Options, in io.Reader) (Results, error) {
 			}
 		}
 	}
-	return results, nil
 }

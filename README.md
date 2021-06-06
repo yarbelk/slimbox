@@ -59,6 +59,7 @@ such as:
 - [ ] rm
 - [ ] ls
 
+Part way through this I intend to implement signal handling as well; once i'm comfortable with how the various programs are structured
 then i want some more interesting ones like:
 
 - [ ] df
