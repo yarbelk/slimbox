@@ -17,7 +17,7 @@ func TestReadFileFailures(t *testing.T) {
 	errChan := make(chan error)
 	wg := sync.WaitGroup{}
 	wg.Add(1)
-	go wc.ReadFile(wc.DefaultOptions{Filenames: []string{"."}}, fnChan, resChan, errChan, &wg)
+	go wc.ReadFile(wc.Options{Files: []string{"."}}, fnChan, resChan, errChan, &wg)
 	go func() {
 		wg.Wait()
 		close(resChan)

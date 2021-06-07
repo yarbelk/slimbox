@@ -19,11 +19,13 @@ var (
 )
 
 func main() {
-	if err := options.Parse(os.Args[1:]); err != nil {
+	wcOptions := wc.Options{}
+	wcFS := wc.BindFlagSet(&wcOptions)
+	if err := wcFS.Parse(os.Args[1:]); err != nil {
 		fmt.Fprint(os.Stderr, err)
-		options.Usage()
+		wcFS.Usage()
 	}
-	if err := wc.WcMain(options); err != nil {
+	if err := wc.Main(wcOptions); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
