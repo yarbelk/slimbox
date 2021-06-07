@@ -32,7 +32,7 @@ func TestBasicTypesStdinStyle(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			options := &testOptions{Opts: make(map[string]bool), filenames: tt.args}
+			options := wc.Options{Files: tt.args[:]}
 			actual, err := wc.WordCount(options, tt.given)
 			if err != nil {
 				t.Errorf("expected no error, actual %s", err)
@@ -60,7 +60,7 @@ func TestUnicodeStuff(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Log(arabic)
 			t.Log(chinese)
-			options := &testOptions{Opts: make(map[string]bool), filenames: tt.args}
+			options := wc.Options{Files: tt.args[:]}
 			actual, err := wc.WordCount(options, tt.given)
 			if err != nil {
 				t.Errorf("expected no error, actual %s", err)
