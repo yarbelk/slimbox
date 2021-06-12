@@ -1,0 +1,11 @@
+/ \t/	{/*skip*/}
+/(&&|\|\||;;|<<|>>|<&|>&|<>|<<-|>\|)/	{
+    lval.empty = struct{}{}
+    oText := Shlex.Text()
+    return getOperator(oText)}
+/(if|then|else|elif|fi|do|done|case|esac|while|until|for|{|}|!|in)/	{
+    lval.empty = struct{}{}
+    oText := Shlex.Text()
+    return getReserved(oText)}
+//
+package sh
