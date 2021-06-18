@@ -72,3 +72,25 @@ func TestReservedWords(t *testing.T) {
 		})
 	}
 }
+
+func TestExactlyReservedWords(t *testing.T) {
+	var tests = []struct {
+		name     string
+		expected int
+		given    string
+	}{
+		{"trailing character", sh.WORD, "esacX"},
+		{"leading character", sh.WORD, "Xesac"},
+		{"leading and character", sh.WORD, "XesacX"},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			tokenizer := sh.NewLexer(strings.NewReader(tt.given))
+			actual := tokenizer.Lex(&sh.ShSymType{})
+			if actual != tt.expected {
+				t.Errorf("given(%s): expected %d, actual %d", tt.given, tt.expected, actual)
+			}
+		})
+	}
+}
