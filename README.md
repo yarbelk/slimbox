@@ -1,4 +1,5 @@
 # slimbox
+[![Go Report Card](https://goreportcard.com/badge/gitlab.com/yarbelk/slimbox)](https://goreportcard.com/report/gitlab.com/yarbelk/slimbox)
 
 busybox like project; a paired down version of the gnu tools in on big binary.
 
@@ -55,13 +56,14 @@ I'm just targeting desktop linux right now.
 
 ## implemented
 
-See [https://gitlab.com/yarbelk/slimbox/-/boards](kanban board) for where we are.  I want some basic functionality and simple apps
+See [https://gitlab.com/yarbelk/slimbox/-/boards](kanban board) for where we are.  I want some basic functionality and simple apps and `sh`
 such as:
 
 - [x] cat
 - [x] wc
 - [x] true
 - [x] false
+- [ ] sh
 - [ ] yes
 - [ ] cp
 - [ ] mv
